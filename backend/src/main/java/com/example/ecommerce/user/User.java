@@ -22,5 +22,13 @@ public class User {
 
     private String password;
 
-    private short role;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    @Builder.Default
+    private Role role = Role.CUSTOMER;
+}
+
+enum Role {
+    ADMIN,
+    CUSTOMER
 }

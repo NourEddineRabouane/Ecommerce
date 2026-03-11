@@ -44,24 +44,24 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
+        // Create Token for the user
         String token = jwtUtil.generateToken(authRequest.getEmail());
         return  ResponseEntity.ok( new AuthResponseDto(token));
     }
 
     @PostMapping("/signup")
-    private ResponseEntity<?> signup(@RequestBody @Valid SignUpRequestDto request){
-        log.info(request.getEmail());
-        log.info(request.getPassword());
-        log.info(request.getUsername());
-        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-        String password = bCryptPasswordEncoder.encode(request.getPassword());
+    private ResponseEntity<?> signup(@RequestBody @Valid SignUpRequestDto request) throws Exception{
 
-        userService.createUser(User.builder()
+//        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+//        String password = bCryptPasswordEncoder.encode(request.getPassword());
+        String password = PasswordEncoder.encode(request.getPassword());
+
+        User user = userService.createUser(User.builder()
                 .name(request.getUsername())
                 .email(request.getEmail())
                 .password(password)
                 .build());
 
-        return ResponseEntity.ok("User has been created successfully");
+        return ResponseEntity.ok(user);
     }
 }
