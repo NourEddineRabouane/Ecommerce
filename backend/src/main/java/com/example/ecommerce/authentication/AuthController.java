@@ -5,6 +5,7 @@ import com.example.ecommerce.authentication.dto.AuthResponseDto;
 import com.example.ecommerce.authentication.dto.SignUpRequestDto;
 import com.example.ecommerce.user.User;
 import com.example.ecommerce.user.UserService;
+import com.example.ecommerce.utils.EmailService;
 import com.example.ecommerce.utils.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,9 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private EmailService emailService;
 
     @PostMapping("/login")
     private ResponseEntity<AuthResponseDto> login(@RequestBody AuthRequestDto authRequest){
@@ -61,7 +65,15 @@ public class AuthController {
                 .email(request.getEmail())
                 .password(password)
                 .build());
+        
+        // Demo email send to user
+        emailService.sendPlainText(
+                user.getEmail(),
+                "Email Verification",
+                "this is the url verification"
+        );
 
         return ResponseEntity.ok(user);
+
     }
 }

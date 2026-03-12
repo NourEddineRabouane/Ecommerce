@@ -26,6 +26,10 @@ public class User {
     @Column(name = "role", nullable = false)
     @Builder.Default
     private Role role = Role.CUSTOMER;
+
+    @Column( name = "is_verified", nullable = false)
+    @Builder.Default
+    private Integer isVerified = 0;
 }
 
 enum Role {

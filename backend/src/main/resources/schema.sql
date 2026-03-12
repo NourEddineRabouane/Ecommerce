@@ -10,7 +10,7 @@ drop table if exists images;
         name VARCHAR(100),
         email VARCHAR(100) UNIQUE NOT NULL,
         password VARCHAR(100),
-
+        is_verified INTEGER DEFAULT 0,
         role ENUM("ADMIN", "CUSTOMER") DEFAULT "CUSTOMER"
     );
 
