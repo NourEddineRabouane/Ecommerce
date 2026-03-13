@@ -1,5 +1,6 @@
 package com.example.ecommerce.exception_handlers;
 
+import com.example.ecommerce.exception.TokenException;
 import com.example.ecommerce.exception.UserException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -21,6 +22,18 @@ public class GloabalExceptionHandler {
                 );
 
         return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(problemDetail);
+    }
+
+    // Token Exception
+    @ExceptionHandler(TokenException.class)
+    public ResponseEntity<?> handleTokenException( TokenException e){
+        ProblemDetail problemDetail = ProblemDetail
+                .forStatusAndDetail(
+                        HttpStatus.FORBIDDEN,
+                        e.getMessage()
+                );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(problemDetail);
     }
 }

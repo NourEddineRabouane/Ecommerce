@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Email Verification</title>
+</head>
+<body>
+<div style="font-family: Arial, sans-serif; text-align: center; margin-top: 40px;">
+    <h2>Email Verification</h2>
+
+    <p>
+        Thank you for registering. Please click the button below to verify your email address.
+    </p>
+
+    <a href="${verificationUrl}"
+       style="
+           display: inline-block;
+           padding: 12px 24px;
+           background-color: #4CAF50;
+           color: white;
+           text-decoration: none;
+           border-radius: 5px;
+           font-weight: bold;
+       ">
+        Verify Your Email
+    </a>
+
+    <p style="margin-top:20px; font-size: 14px; color: gray;">
+        If the button does not work, copy and paste this link into your browser:
+    </p>
+
+    <p>
+        <a href="${verificationUrl}">${verificationUrl}</a>
+    </p>
+</div>
+</body>
+</html>

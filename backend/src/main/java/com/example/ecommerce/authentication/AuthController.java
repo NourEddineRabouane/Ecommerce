@@ -7,6 +7,7 @@ import com.example.ecommerce.user.User;
 import com.example.ecommerce.user.UserService;
 import com.example.ecommerce.utils.EmailService;
 import com.example.ecommerce.utils.JwtUtil;
+import com.example.ecommerce.utils.JwtUtilEmailVerification;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,9 @@ public class AuthController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private JwtUtilEmailVerification jwtUtilEmailVerification;
 
     @Autowired
     private UserService userService;
@@ -55,22 +59,23 @@ public class AuthController {
 
     @PostMapping("/signup")
     private ResponseEntity<?> signup(@RequestBody @Valid SignUpRequestDto request) throws Exception{
-
-//        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-//        String password = bCryptPasswordEncoder.encode(request.getPassword());
+        // Encode Password
         String password = PasswordEncoder.encode(request.getPassword());
-
+        // Create user instance
         User user = userService.createUser(User.builder()
                 .name(request.getUsername())
                 .email(request.getEmail())
                 .password(password)
                 .build());
-        
-        // Demo email send to user
-        emailService.sendPlainText(
+        // Generate Token for email verification
+        String token = jwtUtilEmailVerification.generateToken(user.getId(), user.getEmail());
+        // Create verification url
+        String verificationUrl = jwtUtilEmailVerification.generateVerificationUrl(token);
+        // Send Email to the user
+        emailService.sendHtml(
                 user.getEmail(),
                 "Email Verification",
-                "this is the url verification"
+                verificationUrl
         );
 
         return ResponseEntity.ok(user);
