@@ -14,12 +14,13 @@ import java.util.Date;
 
 @Component
 public class JwtUtilEmailVerification implements JwtUtilEmailVerificationInterface {
+    @Value("${spring.app.jwtutil.email.secret}")
+    private String SECRET;
 
-    private final String SECRET = "Zu+1JKiTQzZhNI7P6q7vIGZ6n/LCUYPUk=nZvFQtcVyx";
-    @Value("${spring.app.backendurl}")
-    private String backendUrl;
+    @Value("${spring.app.frontendUrl}")
+    private String frontendUrl;
 
-    private Key getVerificationKey(){
+    private Key getVerificationKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET);
         return Keys.hmacShaKeyFor(keyBytes);
     }
@@ -39,18 +40,18 @@ public class JwtUtilEmailVerification implements JwtUtilEmailVerificationInterfa
     @Override
     public Claims isTokenValid(String token) {
         Claims claims = null;
-        try{
+        try {
             Key key = getVerificationKey();
 
             claims = Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
-                    .parseClaimsJws( token )
+                    .parseClaimsJws(token)
                     .getBody();
 
-        } catch ( ExpiredJwtException e){
-            throw  new TokenException("Token was expired!");
-        } catch ( JwtException e){
+        } catch (ExpiredJwtException e) {
+            throw new TokenException("Token was expired!");
+        } catch (JwtException e) {
             throw new TokenException("Token is invalid!");
         }
         return claims;
@@ -58,6 +59,6 @@ public class JwtUtilEmailVerification implements JwtUtilEmailVerificationInterfa
 
     @Override
     public String generateVerificationUrl(String token) {
-        return backendUrl + "?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8);
+        return frontendUrl + "?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8);
     }
 }

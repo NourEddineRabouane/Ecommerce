@@ -2,12 +2,15 @@ package com.example.ecommerce.authentication;
 
 import com.example.ecommerce.authentication.dto.AuthRequestDto;
 import com.example.ecommerce.authentication.dto.AuthResponseDto;
+import com.example.ecommerce.authentication.dto.EmailVerificationRequestDto;
 import com.example.ecommerce.authentication.dto.SignUpRequestDto;
+import com.example.ecommerce.exception.TokenException;
 import com.example.ecommerce.user.User;
 import com.example.ecommerce.user.UserService;
 import com.example.ecommerce.utils.EmailService;
 import com.example.ecommerce.utils.JwtUtil;
 import com.example.ecommerce.utils.JwtUtilEmailVerification;
+import io.jsonwebtoken.Claims;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +23,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -40,7 +45,7 @@ public class AuthController {
     private EmailService emailService;
 
     @PostMapping("/login")
-    private ResponseEntity<AuthResponseDto> login(@RequestBody AuthRequestDto authRequest){
+    private ResponseEntity<?> login(@RequestBody AuthRequestDto authRequest) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -48,17 +53,18 @@ public class AuthController {
                             authRequest.getPassword()
                     )
             );
-        } catch (AuthenticationException e){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Invalid Credentials!"));
         }
 
         // Create Token for the user
         String token = jwtUtil.generateToken(authRequest.getEmail());
-        return  ResponseEntity.ok( new AuthResponseDto(token));
+        return ResponseEntity.ok(new AuthResponseDto(token));
     }
 
     @PostMapping("/signup")
-    private ResponseEntity<?> signup(@RequestBody @Valid SignUpRequestDto request) throws Exception{
+    private ResponseEntity<?> signup(@RequestBody @Valid SignUpRequestDto request) throws Exception {
         // Encode Password
         String password = PasswordEncoder.encode(request.getPassword());
         // Create user instance
@@ -80,5 +86,23 @@ public class AuthController {
 
         return ResponseEntity.ok(user);
 
+    }
+
+    @PostMapping("/email-verify")
+    private ResponseEntity<?> verifyEmail(@RequestBody EmailVerificationRequestDto request) {
+        String token = request.getToken();
+
+        // Extract Claims and Verify Token Eligibility
+        Claims claims = jwtUtilEmailVerification.isTokenValid(token);
+
+        // Extract Data from claims and Verify
+        boolean isVerified = userService.verifyUserEmail(Long.valueOf(claims.getSubject()),
+                claims.get("email", String.class),
+                claims.get("object", String.class));
+
+        if (!isVerified)
+            throw new TokenException("Email Could not be verified!");
+
+        return ResponseEntity.ok(Map.of("message", "Email was successfully verified."));
     }
 }
